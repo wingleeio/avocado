@@ -1,4 +1,4 @@
-import { ContextWithNext, HttpMethod, Item, MergeObjects, Middleware } from "./avocado-types";
+import { ContextWithNext, HttpMethod, Item, MergeObjects, Middleware, Route } from "./avocado-types";
 import { IncomingMessage, ServerResponse, createServer } from "http";
 
 import { TrieRouter } from "./trie-router";
@@ -87,20 +87,34 @@ export class Avocado<Context extends AvocadoContext> {
         } as const;
     }
 
+    private static flatten(items: ReadonlyArray<Item>, basePath: string = ""): Route[] {
+        const routes: Route[] = [];
+
+        for (const item of items) {
+            if (item.type === "ROUTE") {
+                routes.push({
+                    ...item,
+                    path: basePath + item.path,
+                });
+            } else if (item.type === "BRANCH") {
+                const mergedBasePath = basePath + item.path;
+                routes.push(...this.flatten(item.items, mergedBasePath));
+            }
+        }
+
+        return routes;
+    }
+
     public listen = async (port: number, routes: ReadonlyArray<Item>) => {
         const router = new TrieRouter<(context: any) => any, HttpMethod>();
 
-        const build = (routes: ReadonlyArray<Item>) => {
+        const build = (routes: ReadonlyArray<Route>) => {
             routes.forEach((route) => {
-                if (route.type === "ROUTE") {
-                    router.add(route.path, route.method, route.handler);
-                } else {
-                    build(route.items);
-                }
+                router.add(route.path, route.method, route.handler);
             });
         };
 
-        build(routes);
+        build(Avocado.flatten(routes));
 
         const server = createServer((req, res) => {
             const path = req.url?.split("?")[0] || "";
