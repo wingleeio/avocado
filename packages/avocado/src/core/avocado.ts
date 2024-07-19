@@ -3,12 +3,12 @@ import { IncomingMessage, ServerResponse, createServer } from "http";
 
 import { TrieRouter } from "./trie-router";
 
-type DefaultContext = {
+export type AvocadoContext = {
     req: IncomingMessage;
     res: ServerResponse;
 };
 
-export class Avocado<Context extends DefaultContext> {
+export class Avocado<Context extends AvocadoContext> {
     constructor(
         private context: Context = {} as Context,
         public middleware: Array<Middleware<Context, any>> = [],
@@ -87,7 +87,7 @@ export class Avocado<Context extends DefaultContext> {
         } as const;
     }
 
-    public static listen = async (port: number, routes: ReadonlyArray<Item>) => {
+    public listen = async (port: number, routes: ReadonlyArray<Item>) => {
         const router = new TrieRouter<(context: any) => any, HttpMethod>();
 
         const build = (routes: ReadonlyArray<Item>) => {
@@ -108,12 +108,12 @@ export class Avocado<Context extends DefaultContext> {
 
             const match = router.lookup(path, method);
 
-            if (match) {
-                const handler = match.value;
+            const handler = match.value;
+
+            if (handler) {
                 handler({ req, res, parameters: match.parameters });
             } else {
-                res.statusCode = 404;
-                res.end("Not found");
+                this.execute(Object.assign({ req, res }, this.context), () => {});
             }
         });
 

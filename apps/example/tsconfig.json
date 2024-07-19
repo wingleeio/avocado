@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "jsxImportSource": "@kitajs/html",
+        "plugins": [{ "name": "@kitajs/ts-html-plugin" }],
+        "types": ["node", "@kitajs/html/htmx.d.ts", "@kitajs/html/alpine.d.ts"],
+        "esModuleInterop": true,
+        "paths": {
+            "@/*": ["./src/*"]
+        }
+    }
+}
