@@ -1,8 +1,8 @@
 export const StreamCounter = () => {
     return (
-        <div hx-ext="sse" sse-connect="/stream" class="flex gap-2 items-center">
+        <div hx-ext="sse" sse-connect="/counter/stream" class="flex gap-2 items-center">
             <button
-                hx-post="/add"
+                hx-post="/counter/add"
                 hx-swap="none"
                 class="py-2 px-4 border border-slate-100 rounded-md hover:bg-slate-100"
             >
@@ -14,7 +14,7 @@ export const StreamCounter = () => {
                 </span>
             </div>
             <button
-                hx-post="/subtract"
+                hx-post="/counter/subtract"
                 hx-swap="none"
                 class="py-2 px-4 border border-slate-100 rounded-md hover:bg-slate-100"
             >
